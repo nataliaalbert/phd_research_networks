@@ -3,11 +3,12 @@ import re
 import pandas as pd
 from PyPDF2 import PdfReader
 from pathlib import Path
+from docling.document_converter import DocumentConverter
 
 # -------------------------------------------------------------------
 # 1. Paths – adjust these if your project name/folders differ
 # -------------------------------------------------------------------
-BASE_DIR =Path('C:\\Users\\albertna\\PycharmProjects\\PythonProject')  # Adjust to your base directory
+BASE_DIR = Path.cwd().parents[1]
 DATA_RAW = os.path.join(BASE_DIR, "data", "raw")
 DATA_HELPER = os.path.join(BASE_DIR, "data", "helper")
 DATA_PROCESSED = os.path.join(BASE_DIR, "data", "processed")
@@ -31,18 +32,12 @@ def load_terms_from_excel(path: str) -> pd.DataFrame:
     return terms_df
 
 def pdf_to_text(path: str) -> str:
-    try:
-        reader = PdfReader(path, strict=False)
-    except PdfReadError:
-        # Log the problematic file and continue
-        print(f"Skipping corrupted: {path}")
-    pages = []
-    for page in reader.pages:
-        try:
-            pages.append(page.extract_text() or "")
-        except Exception as e:
-            print(f"Could not read page in {path}: {e}")
-    return "\n".join(pages)
+    converter = DocumentConverter()
+    result = converter.convert(path)
+
+    text = result.document.export_to_text()
+
+    return text
 
 
 def count_term(text: str, term: str) -> int:
